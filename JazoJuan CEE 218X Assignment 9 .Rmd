@@ -1,10 +1,12 @@
 ---
-title: "Untitled"
+title: "CEE 218X Assignment 9"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
 ---
+
+
 
 ```{r global, include=FALSE}
 library(flexdashboard)
@@ -25,7 +27,7 @@ Column {data-width=500}
 -----------------------------------------------------------------------
 
 
-### K-12 Internet access across the Bay Area 
+### K-12 Internet access across the Bay Area. Average fraction of K-12 aged children without internet in the Bay Area is about 10% .This is a significant proportion and suggests that serious resources should be aimed at improving access to the internet, especially as most education and work becomes remote. 
 
 ```{r}
 pums_pal <- colorNumeric(
@@ -99,7 +101,7 @@ SF_educ_attain_race %>%
   )
 ```
 
-### Inflow and Outflow by Education Attainment in San Francisco County. 
+### Inflow and outflow by Education Attainment in San Francisco County. We see that education attainment is becoming increasingly stratified as the populations at the extremes (less than highschool/graduate or professional) are growing while the populations in the middle are shrinking. 
 
 ```{r}
 kable(sfc_flows_19_wide_newcols %>% 
