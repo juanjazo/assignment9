@@ -1,0 +1,116 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(tidycensus)
+library(sf)
+library(tigris)
+library(leaflet)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+bay_pums_example <- readRDS(file = "bay_no_access.rds")
+SF_educ_attain_race <- readRDS(file = "SF_educ_attain_race_19.rds")
+sfc_flows_19_wide_newcols <- readRDS(file = "sfc_flows_19_wide_newcols.rds")
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+
+### K-12 Internet access across the Bay Area 
+
+```{r}
+pums_pal <- colorNumeric(
+  palette = "Oranges",
+  domain = bay_pums_example$perc_no_access_student
+)
+
+leaflet() %>%
+  addTiles() %>% 
+  addPolygons(
+    data = bay_pums_example,
+    fillColor = ~pums_pal(perc_no_access_student),
+    color = "white",
+    opacity = 0.5,
+    fillOpacity = 0.5,
+    weight = 1,
+    label = ~paste0(
+      round(perc_no_access_student), 
+      "% K-12 Students with No Internet Access at Home"
+    ),
+    highlightOptions = highlightOptions(
+      weight = 2,
+      opacity = 1
+    )
+  ) %>% 
+  addLegend(
+    data = bay_pums_example,
+    pal = pums_pal,
+    values = ~perc_no_access_student,
+    title = "% Bay Area K-12<br>Students with No<br>Internet Access<br>At Home"
+  )
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Education attainment in the Bay Area by race. 
+
+```{r}
+SF_educ_total <-
+  SF_educ_attain_race %>% 
+  group_by(race) %>% 
+  summarize(estimate = sum(estimate)) %>% 
+  mutate(attainment = "Total")
+
+
+SF_educ_attain_race %>% 
+  group_by(attainment, race) %>% 
+  summarize(estimate = sum(estimate)) %>% 
+  rbind(SF_educ_total) %>% 
+  ggplot() +
+  geom_bar(
+    aes(
+      x = attainment %>% factor(levels = rev(c("Total",SF_educ_attain_race$attainment[1:4]))),
+      y = estimate,
+      fill = race
+    ),
+    stat = "identity",
+    position = "fill"
+  ) +
+  labs(
+    x = "Educational Attainment",
+    y = "Proportion of households",
+    title = "Bay Area Education Attainment by Race",
+    fill = "Race of Householder"
+  ) +
+  coord_flip() +
+  theme(
+    legend.position = "bottom",
+    legend.direction = "vertical"
+  )
+```
+
+### Inflow and Outflow by Education Attainment in San Francisco County. 
+
+```{r}
+kable(sfc_flows_19_wide_newcols %>% 
+  select(
+    `Education Level` = educ_attain, 
+    `Internal net`,
+    `External net`,
+    `Here last year`, 
+    `Here this year`, 
+    Outflow, 
+    Inflow
+  ))
+```
+
